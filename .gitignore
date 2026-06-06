@@ -1,0 +1,10 @@
+dist/
+*.tgz
+
+# AI tools
+_bmad-output/
+_bmad/
+openspec/
+.claude/
+.codex/
+.gemini/
