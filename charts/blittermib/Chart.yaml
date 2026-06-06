@@ -2,13 +2,7 @@ apiVersion: v2
 name: blittermib
 description: Pixelperfect SNMP MIB browser — self-hostable, browser-based reference tool.
 type: application
-# Decoupled versioning (this chart lives in its own repo):
-# - `version` is the CHART's semver; the release workflow stamps it
-#   from the chart repo's git tag (the OCI tag follows it).
-# - `appVersion` PINS the blittermib application release this chart
-#   is tested against; bump it deliberately via PR when a new app
-#   version ships.
-version: 0.10.0
+version: 0.1.0
 appVersion: "0.10.0"
 home: https://github.com/no42-org/blittermib
 sources:
