@@ -51,10 +51,16 @@ spec:
             - "/var/lib/blittermib/data"
             - "-listen"
             - "0.0.0.0:8080"
-          {{- if .Values.uploads.enabled }}
+          {{- if or .Values.uploads.enabled .Values.walkDecoder.enabled }}
           env:
+            {{- if .Values.uploads.enabled }}
             - name: BLITTERMIB_UPLOAD_ENABLED
               value: "true"
+            {{- end }}
+            {{- if .Values.walkDecoder.enabled }}
+            - name: BLITTERMIB_WALK_DECODER_ENABLED
+              value: "true"
+            {{- end }}
           {{- end }}
           ports:
             - name: http
