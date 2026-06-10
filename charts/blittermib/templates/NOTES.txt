@@ -1,7 +1,9 @@
 blittermib {{ .Chart.AppVersion }} is deploying as release "{{ .Release.Name }}".
 
-The MIB corpus is re-ingested on startup (~5s), so give the pod a moment
-to become Ready:
+The MIB corpus is ingested in the background on startup; the pod stays
+Running but not Ready (out of Service rotation) until the corpus is
+loaded — seconds from the baked-in image, but potentially minutes on
+slow persistent storage. Watch it become Ready:
 
   kubectl -n {{ .Release.Namespace }} rollout status deploy/{{ include "blittermib.fullname" . }}
 

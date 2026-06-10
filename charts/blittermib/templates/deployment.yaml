@@ -78,6 +78,7 @@ spec:
               path: /readyz
               port: http
             periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             # /healthz is pure liveness — 200 as soon as the server serves,
             # independent of the corpus load. timeoutSeconds is raised off
