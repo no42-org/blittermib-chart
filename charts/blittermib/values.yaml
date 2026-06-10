@@ -50,6 +50,14 @@ persistence:
 uploads:
   enabled: false
 
+# Expose the SNMP walk decoder at /walk (sets
+# BLITTERMIB_WALK_DECODER_ENABLED): paste or upload an snmpwalk /
+# snmpbulkwalk capture and decode it against the loaded MIBs. Walks
+# are parsed in memory and never stored, so this has no persistence
+# implications. When disabled the /walk routes 404.
+walkDecoder:
+  enabled: false
+
 # Classic Ingress. Mutually exclusive with httpRoute (enabling both
 # fails the render).
 ingress:
