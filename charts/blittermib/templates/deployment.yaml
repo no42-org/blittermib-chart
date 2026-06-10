@@ -61,25 +61,32 @@ spec:
               containerPort: 8080
               protocol: TCP
           startupProbe:
-            # Tolerant window covering the boot-time MIB ingest before
-            # liveness is armed. The HTTP server only starts listening once
-            # the corpus is loaded, which is slow on persistent (e.g. NFS)
-            # storage — tune via .Values.startupProbe.
+            # Guards the listener-bind moment only. The app binds :8080
+            # before the corpus load (it backgrounds the compile), so this
+            # window is small — the long MIB ingest is covered by the
+            # readiness probe, not startup. Tune via .Values.startupProbe.
             httpGet:
               path: /healthz
               port: http
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
           readinessProbe:
+            # /readyz is 503 until the corpus is loaded, then 200. The pod
+            # stays out of the Service's endpoints (no traffic) during the
+            # boot-time MIB ingest — Running but not Ready, never killed.
             httpGet:
-              path: /healthz
+              path: /readyz
               port: http
             periodSeconds: 10
           livenessProbe:
+            # /healthz is pure liveness — 200 as soon as the server serves,
+            # independent of the corpus load. timeoutSeconds is raised off
+            # the implicit 1s so a busy-but-alive server doesn't flap.
             httpGet:
               path: /healthz
               port: http
             periodSeconds: 10
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
