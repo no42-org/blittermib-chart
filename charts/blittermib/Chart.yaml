@@ -3,7 +3,7 @@ name: blittermib
 description: Pixelperfect SNMP MIB browser — self-hostable, browser-based reference tool.
 type: application
 version: 0.2.1
-appVersion: "0.12.1"
+appVersion: "0.12.2"
 home: https://github.com/no42-org/blittermib
 sources:
   - https://github.com/no42-org/blittermib
