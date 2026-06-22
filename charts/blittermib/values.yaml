@@ -58,6 +58,28 @@ uploads:
 walkDecoder:
   enabled: false
 
+# Expose the read-only MCP tools over HTTP at /mcp (Streamable HTTP
+# transport) for remote or shared AI-client access — the same five
+# tools the stdio binary serves, but reachable over the network. Sets
+# BLITTERMIB_MCP_ENABLED. Off by default. The endpoint is protected by
+# a bearer token (BLITTERMIB_MCP_TOKEN) and FAILS CLOSED: enabled with
+# an empty token, the route stays unregistered (404). The token
+# authenticates but does not encrypt — terminate TLS at your ingress.
+#
+# The stdio MCP server (the blittermib-mcp binary) needs nothing here:
+# it ships in the image and a client runs it via `kubectl exec` against
+# the data volume — see the chart README.
+mcp:
+  enabled: false
+  # Bearer token required on every /mcp request. Provide EITHER token
+  # (the chart creates a Secret holding it) OR existingSecret (you own
+  # the Secret). Required when mcp.enabled and existingSecret is unset.
+  token: ""
+  # Source the token from an existing Secret instead of `token`. The
+  # key defaults to BLITTERMIB_MCP_TOKEN; override with existingSecretKey.
+  existingSecret: ""
+  existingSecretKey: BLITTERMIB_MCP_TOKEN
+
 # Classic Ingress. Mutually exclusive with httpRoute (enabling both
 # fails the render).
 ingress:

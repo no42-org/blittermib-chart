@@ -51,7 +51,7 @@ spec:
             - "/var/lib/blittermib/data"
             - "-listen"
             - "0.0.0.0:8080"
-          {{- if or .Values.uploads.enabled .Values.walkDecoder.enabled }}
+          {{- if or .Values.uploads.enabled .Values.walkDecoder.enabled .Values.mcp.enabled }}
           env:
             {{- if .Values.uploads.enabled }}
             - name: BLITTERMIB_UPLOAD_ENABLED
@@ -60,6 +60,15 @@ spec:
             {{- if .Values.walkDecoder.enabled }}
             - name: BLITTERMIB_WALK_DECODER_ENABLED
               value: "true"
+            {{- end }}
+            {{- if .Values.mcp.enabled }}
+            - name: BLITTERMIB_MCP_ENABLED
+              value: "true"
+            - name: BLITTERMIB_MCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mcp.existingSecret | default (printf "%s-mcp" (include "blittermib.fullname" .)) }}
+                  key: {{ .Values.mcp.existingSecretKey }}
             {{- end }}
           {{- end }}
           ports:
