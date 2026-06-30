@@ -51,8 +51,12 @@ spec:
             - "/var/lib/blittermib/data"
             - "-listen"
             - "0.0.0.0:8080"
-          {{- if or .Values.uploads.enabled .Values.walkDecoder.enabled .Values.mcp.enabled }}
+          {{- if or .Values.uploads.enabled .Values.walkDecoder.enabled .Values.mcp.enabled .Values.compileTimeout }}
           env:
+            {{- if .Values.compileTimeout }}
+            - name: BLITTERMIB_COMPILE_TIMEOUT
+              value: {{ .Values.compileTimeout | quote }}
+            {{- end }}
             {{- if .Values.uploads.enabled }}
             - name: BLITTERMIB_UPLOAD_ENABLED
               value: "true"

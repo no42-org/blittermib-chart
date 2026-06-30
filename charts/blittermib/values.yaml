@@ -50,6 +50,17 @@ persistence:
 uploads:
   enabled: false
 
+# Backstop timeout for compiling a single MIB, applied to BOTH the
+# import pipeline and the boot-time corpus load (sets
+# BLITTERMIB_COMPILE_TIMEOUT). A Go duration string, e.g. "20m". The
+# app's built-in floor is 5m and this override is RAISE-ONLY: values
+# below 5m — or empty/unparseable — are ignored by the app and the 5m
+# default stands. Leave empty to keep the default; raise it only for
+# legitimately huge single-file MIBs that need longer in smidump (e.g.
+# METASWITCH-MIB, ~92k objects, ~10m) and would otherwise quarantine as
+# a compile timeout.
+compileTimeout: ""
+
 # Expose the SNMP walk decoder at /walk (sets
 # BLITTERMIB_WALK_DECODER_ENABLED): paste or upload an snmpwalk /
 # snmpbulkwalk capture and decode it against the loaded MIBs. Walks
