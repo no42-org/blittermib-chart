@@ -13,6 +13,10 @@ it for humans.
    `chore: set chart version X.Y.Z` commit if it doesn't.
    `appVersion` names the application release the chart is tested
    against; it is bumped deliberately by PR, never as part of tagging.
+   **Run `make docs` in the same commit** — the README's version
+   badges are generated from exactly these two fields and are packaged
+   into the (immutable) published tarball, so a bump without the regen
+   ships stale badges forever (this bit v0.5.5).
 
 3. **Tag and push** — this is the publication trigger:
 

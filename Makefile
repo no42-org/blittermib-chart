@@ -1,8 +1,15 @@
 # Helm chart for blittermib — https://github.com/no42-org/blittermib
-.PHONY: lint template package smoke-install help
+.PHONY: docs lint template package smoke-install help
 
 CHART_DIR := charts/blittermib
 TAG ?=
+
+# docs regenerates the chart README from Chart.yaml/values.yaml. Run it
+# with every version/appVersion bump: the README is packaged into the
+# published (immutable) chart tarball, so a stale badge ships forever.
+docs:
+	@command -v helm-docs >/dev/null 2>&1 || { echo "helm-docs not installed (brew install norwoodj/tap/helm-docs)"; exit 1; }
+	helm-docs --chart-search-root charts
 
 lint:
 	helm lint $(CHART_DIR)
@@ -33,6 +40,7 @@ package:
 	fi
 
 help:
+	@echo "make docs      regenerate chart README via helm-docs (run with every bump)"
 	@echo "make lint      helm lint + render guards"
 	@echo "make template  render default and persistent variants"
 	@echo "make package   build dist/ tarball (TAG=vX.Y.Z stamps the chart version)"
