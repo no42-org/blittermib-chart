@@ -1,0 +1,42 @@
+name: Enhancement
+description: Propose a change to the chart — a new values key, a new resource, a better default
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What can't you do today
+      description: The deployment problem, not the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: >
+        Name new or changed `values.yaml` keys verbatim, with their
+        defaults. A change that alters rendered output for existing
+        users needs a migration note.
+      render: yaml
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Does this change rendered output for existing users?
+      options:
+        - "No — additive, defaults unchanged"
+        - "Yes — existing installs would render differently"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >
+        Including doing it outside the chart — a post-renderer, a
+        kustomize overlay, or an initContainer.
