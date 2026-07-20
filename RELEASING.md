@@ -29,7 +29,18 @@ it for humans.
    (version stamped from the tag), pushes it to
    `oci://ghcr.io/no42-org/charts`, cosign-signs the digest, attests
    SLSA build provenance, and creates a **draft** GitHub release with
-   the tarball, SBOM, and signed checksums attached. Watch it:
+   the tarball, an SBOM, and signed checksums attached.
+
+   The SBOM's subject is the **application image the chart renders by
+   default** (`ghcr.io/no42-org/blittermib:<appVersion>`), not the
+   chart. A chart has no dependency graph — syft finds exactly one
+   synthetic package in it, which tells an operator nothing that
+   `checksums.txt` doesn't. The image is what actually runs, so that
+   is what gets a bill of materials. It follows `appVersion`
+   automatically, so an appVersion bump re-scans without anyone
+   remembering to.
+
+   Watch it:
    `gh run watch $(gh run list --workflow=release.yml
    --limit 1 --json databaseId -q '.[0].databaseId')`.
 

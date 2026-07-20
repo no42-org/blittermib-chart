@@ -90,19 +90,36 @@ jobs:
           subject-digest: ${{ steps.chart_push.outputs.digest }}
           push-to-registry: true
 
-      - name: Generate SBOM
+      # The SBOM subject is the APPLICATION IMAGE, not the chart. A
+      # chart has no dependency graph — scanning it yields a single
+      # synthetic package, i.e. checksums.txt in SPDX clothing. What
+      # an operator needs to know is what they are about to run, so
+      # take the image the chart actually renders by default.
+      - name: Resolve the rendered application image
+        id: app_image
+        run: |
+          ref=$(helm template blittermib charts/blittermib \
+            | awk '/^[[:space:]]*image:/ {gsub(/"/,"",$2); print $2; exit}')
+          if [ -z "$ref" ]; then
+            echo "could not resolve the rendered image reference" >&2
+            exit 1
+          fi
+          echo "image reference: $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SBOM for the application image
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0.24.0
         with:
-          path: charts/blittermib
+          image: ${{ steps.app_image.outputs.ref }}
           format: spdx-json
-          artifact-name: blittermib-chart.spdx.json
-          output-file: dist/blittermib-chart.spdx.json
+          artifact-name: blittermib-image.spdx.json
+          output-file: dist/blittermib-image.spdx.json
           upload-release-assets: false
 
       - name: Checksums
         run: |
           cd dist
-          sha256sum blittermib-*.tgz blittermib-chart.spdx.json > checksums.txt
+          sha256sum blittermib-*.tgz blittermib-image.spdx.json > checksums.txt
           cat checksums.txt
 
       - name: Sign checksums (keyless)
@@ -124,7 +141,7 @@ jobs:
             --title "blittermib chart ${TAG#v}" \
             --notes "Draft — replace with curated notes before publishing." \
             dist/blittermib-*.tgz \
-            dist/blittermib-chart.spdx.json \
+            dist/blittermib-image.spdx.json \
             dist/checksums.txt \
             dist/checksums.txt.sig \
             dist/checksums.txt.pem
