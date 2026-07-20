@@ -86,6 +86,18 @@ it for humans.
      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
    ```
 
+## Prereleases
+
+A tag with a semver prerelease suffix — `v0.5.10-rc1` — goes through
+exactly the same pipeline; the trigger glob matches it. The workflow
+detects the suffix and marks the draft `--prerelease`, so publishing
+it does not make it the repository's "Latest release".
+
+Use one to exercise the pipeline end to end after changing it. Note
+that the published chart is still real and still immutable: it lands
+in `oci://ghcr.io/no42-org/charts` permanently, so name it clearly as
+an rc and do not bump `Chart.yaml` for it.
+
 ## Versioning rules
 
 - Chart `version` follows semver: minor for behavioral or additive

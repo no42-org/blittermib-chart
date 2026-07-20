@@ -132,12 +132,21 @@ jobs:
       # Draft, not published: the tag push is what triggers this run,
       # so nothing can have created the release first. A human writes
       # the curated notes and publishes (see RELEASING.md).
+      #
+      # The trigger glob v*.*.* also matches prereleases (v1.2.3-rc1),
+      # so mark those --prerelease here. Without it, publishing an rc
+      # draft would make it the repository's "Latest release".
       - name: Create draft GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" --draft --verify-tag \
+          prerelease=""
+          case "${TAG#v}" in
+            *-*) prerelease="--prerelease"; echo "prerelease tag: $TAG" ;;
+          esac
+          # shellcheck disable=SC2086  # deliberate: empty means "no flag"
+          gh release create "$TAG" --draft --verify-tag $prerelease \
             --title "blittermib chart ${TAG#v}" \
             --notes "Draft — replace with curated notes before publishing." \
             dist/blittermib-*.tgz \
