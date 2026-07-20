@@ -122,11 +122,15 @@ jobs:
           sha256sum blittermib-*.tgz blittermib-image.spdx.json > checksums.txt
           cat checksums.txt
 
+      # cosign v3 defaults to the new bundle format, which IGNORES
+      # --output-signature/--output-certificate and requires --bundle;
+      # passing neither aborts with an empty-path error. One bundle
+      # carries both the signature and the certificate, and matches the
+      # SHA256SUMS.sigstore.json the application repo publishes.
       - name: Sign checksums (keyless)
         run: |
           cosign sign-blob --yes \
-            --output-signature dist/checksums.txt.sig \
-            --output-certificate dist/checksums.txt.pem \
+            --bundle dist/checksums.txt.sigstore.json \
             dist/checksums.txt
 
       # Draft, not published: the tag push is what triggers this run,
@@ -152,5 +156,4 @@ jobs:
             dist/blittermib-*.tgz \
             dist/blittermib-image.spdx.json \
             dist/checksums.txt \
-            dist/checksums.txt.sig \
-            dist/checksums.txt.pem
+            dist/checksums.txt.sigstore.json
