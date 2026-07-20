@@ -21,6 +21,11 @@ kubectl port-forward svc/blittermib 8080:8080   # then open http://localhost:808
 blittermib is **single-instance** (`replicaCount: 1`) — the SQLite
 cache is per-pod, so it doesn't scale horizontally.
 
+To try unreleased chart changes, `--version 0.0.0-main` installs the
+preview built from the tip of `main`. It is signed but mutable,
+overwritten by every merge, and carries no SBOM or provenance — don't
+run it in production.
+
 ## Versioning
 
 | field | meaning | source |

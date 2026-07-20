@@ -86,6 +86,28 @@ it for humans.
      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
    ```
 
+## Preview builds
+
+Every merge to `main` publishes a signed preview chart to a single
+mutable tag:
+
+```bash
+helm install blittermib oci://ghcr.io/no42-org/charts/blittermib \
+  --version 0.0.0-main
+```
+
+It is overwritten by the next merge, carries no SBOM, provenance or
+GitHub release, and is not a release — `0.0.0-main` sorts below every
+real version. (The version string doubles as the OCI tag because
+`helm push` derives the tag from the chart version and offers no way
+to override it, so the tag has to be valid semver.)
+
+Its real job is to keep the publish path warm. `ci.yml` and
+`release.yml` both call the same `publish.yml`, so the package, push
+and cosign steps a release depends on run on every merge instead of
+only when you tag. The cosign v3 bundle bug that broke `v0.5.10-rc1`
+would have surfaced at merge time under this arrangement.
+
 ## Prereleases
 
 A tag with a semver prerelease suffix — `v0.5.10-rc1` — goes through

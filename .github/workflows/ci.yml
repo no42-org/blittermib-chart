@@ -8,10 +8,12 @@ on:
 permissions:
   contents: read
 
-# Superseded pushes to the same ref are wasted runner time.
+# Superseded pull-request pushes are wasted runner time, but a main run
+# publishes the preview chart — cancelling one mid-publish would leave
+# an unsigned chart on the mutable tag. Cancel PRs only.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   gates:
@@ -19,3 +21,25 @@ jobs:
     uses: ./.github/workflows/gates.yml
     permissions:
       contents: read
+
+  # Preview publish: every merge to main overwrites a single mutable
+  # 0.0.0-main chart tag. Two reasons for it, in order of importance:
+  # it exercises the real publish path (the same workflow a release
+  # calls) on every merge rather than only at tag time, and it lets
+  # people try unreleased chart changes.
+  #
+  # 0.0.0-main is not an accident: helm push derives the OCI tag from
+  # the chart version, so the tag must be valid semver. This one sorts
+  # below every real version and is obviously not a release.
+  preview:
+    name: preview
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: gates
+    uses: ./.github/workflows/publish.yml
+    with:
+      chart-version: 0.0.0-main
+      release: false
+    permissions:
+      contents: read
+      packages: write  # push the preview chart to GHCR
+      id-token: write  # keyless cosign: short-lived Fulcio cert
