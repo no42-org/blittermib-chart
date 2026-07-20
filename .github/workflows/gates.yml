@@ -1,0 +1,125 @@
+# Quality gates, defined ONCE. Both ci.yml (pull requests, pushes to
+# main) and release.yml (version tags) call this workflow, so a
+# release cannot publish through a gate that pull requests enforce.
+name: Gates
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: chart lint + render
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Lint and template
+        run: |
+          make lint
+          make template
+
+  lint-actions:
+    name: actionlint + zizmor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      # Both land outside the default PATH on the runner image, so
+      # add their bin directories explicitly rather than relying on it.
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: v1.7.12
+        run: |
+          go install "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install zizmor
+        env:
+          ZIZMOR_VERSION: 1.27.0
+        run: |
+          pipx install "zizmor==${ZIZMOR_VERSION}"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Lint workflows
+        run: make lint-actions
+
+  # Install the chart on a throwaway kind cluster against the PINNED
+  # application release (Chart.yaml appVersion) and exercise the
+  # full path: standards served on first boot, then an import-drop
+  # round trip. This is what "the chart is tested against appVersion"
+  # means concretely.
+  smoke:
+    name: kind smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: lint
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install kind
+        run: |
+          curl -fsSLo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Create kind cluster
+        run: kind create cluster --wait 120s
+
+      - name: Install Gateway API CRDs
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+
+      - name: Install chart (pinned appVersion image, httpRoute path)
+        run: |
+          helm install blittermib charts/blittermib \
+            --set httpRoute.enabled=true \
+            --set 'httpRoute.parentRefs[0].name=dummy-gateway'
+
+      - name: Wait for pod Ready
+        run: kubectl rollout status deploy/blittermib --timeout=180s
+
+      - name: Standards served on first boot
+        run: |
+          kubectl exec deploy/blittermib -- \
+            wget -qO- http://127.0.0.1:8080/m/IF-MIB >/dev/null
+
+      - name: Import-drop smoke (file into import/ becomes a served module)
+        # kubectl cp needs tar INSIDE the container (alpine busybox
+        # provides it). The import/ tree exists before readiness.
+        run: |
+          kubectl cp .github/ci-fixtures/CI-SMOKE-MIB \
+            "$(kubectl get pod -l app.kubernetes.io/name=blittermib -o jsonpath='{.items[0].metadata.name}')":/var/lib/blittermib/data/mibs/import/CI-SMOKE-MIB
+          for _ in $(seq 1 30); do
+            if kubectl exec deploy/blittermib -- \
+                 wget -qO- http://127.0.0.1:8080/m/CI-SMOKE-MIB >/dev/null 2>&1; then
+              echo "imported and served"; exit 0
+            fi
+            sleep 2
+          done
+          echo "CI-SMOKE-MIB never became servable" >&2
+          kubectl exec deploy/blittermib -- ls -R /var/lib/blittermib/data/mibs/import || true
+          exit 1
+
+      - name: Dump diagnostics on failure
+        if: failure()
+        run: |
+          kubectl get pods,httproute -A
+          kubectl describe deploy/blittermib || true
+          kubectl logs deploy/blittermib --tail=50 || true
