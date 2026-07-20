@@ -81,7 +81,7 @@ it for humans.
 
    ```bash
    cosign verify-blob checksums.txt \
-     --signature checksums.txt.sig --certificate checksums.txt.pem \
+     --bundle checksums.txt.sigstore.json \
      --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
    ```
