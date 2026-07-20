@@ -25,17 +25,31 @@ it for humans.
    git push origin vX.Y.Z
    ```
 
-   `release.yml` packages the chart (version stamped from the tag),
-   pushes it to `oci://ghcr.io/no42-org/charts`, and cosign-signs the
-   digest. Watch it: `gh run watch $(gh run list --workflow=release.yml
+   `release.yml` re-runs the full quality gates, packages the chart
+   (version stamped from the tag), pushes it to
+   `oci://ghcr.io/no42-org/charts`, cosign-signs the digest, attests
+   SLSA build provenance, and creates a **draft** GitHub release with
+   the tarball, an SBOM, and signed checksums attached.
+
+   The SBOM's subject is the **application image the chart renders by
+   default** (`ghcr.io/no42-org/blittermib:<appVersion>`), not the
+   chart. A chart has no dependency graph — syft finds exactly one
+   synthetic package in it, which tells an operator nothing that
+   `checksums.txt` doesn't. The image is what actually runs, so that
+   is what gets a bill of materials. It follows `appVersion`
+   automatically, so an appVersion bump re-scans without anyone
+   remembering to.
+
+   Watch it:
+   `gh run watch $(gh run list --workflow=release.yml
    --limit 1 --json databaseId -q '.[0].databaseId')`.
 
-4. **Create a GitHub release** with a concise, curated note:
+4. **Publish the draft** with a concise, curated note. The workflow
+   already created the release and attached the artifacts — write the
+   note and flip it out of draft, never create it by hand:
 
    ```bash
-   gh release create vX.Y.Z --verify-tag \
-     --title "blittermib chart X.Y.Z" \
-     --notes "<curated note>"
+   gh release edit vX.Y.Z --notes-file <notes.md> --draft=false
    ```
 
    Note guidelines — curate, don't generate:
@@ -54,7 +68,23 @@ it for humans.
    helm show chart oci://ghcr.io/no42-org/charts/blittermib --version X.Y.Z
    ```
 
-   plus the cosign verification command from the README.
+   plus the cosign verification command from the README, and the
+   build provenance:
+
+   ```bash
+   gh attestation verify oci://ghcr.io/no42-org/charts/blittermib:X.Y.Z \
+     --repo no42-org/blittermib-chart
+   ```
+
+   The release's `checksums.txt` is signed too; verify it with the
+   same identity as the chart:
+
+   ```bash
+   cosign verify-blob checksums.txt \
+     --signature checksums.txt.sig --certificate checksums.txt.pem \
+     --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
+     --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+   ```
 
 ## Versioning rules
 

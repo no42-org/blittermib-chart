@@ -1,0 +1,70 @@
+name: Bug report
+description: Something in the chart renders, installs or behaves wrongly
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repo is the **Helm chart**. If the MIB browser itself
+        misbehaves once it is running, file it in
+        [no42-org/blittermib](https://github.com/no42-org/blittermib/issues)
+        instead.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: values
+    attributes:
+      label: Values you set
+      description: The values file or --set flags used. Redact secrets.
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: >
+        The exact helm command, and — if it is a rendering problem —
+        the relevant `helm template` output.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: chart-version
+    attributes:
+      label: Chart version
+      placeholder: "0.5.9"
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: appVersion / image tag in use
+      placeholder: "0.17.5"
+    validations:
+      required: true
+
+  - type: input
+    id: k8s
+    attributes:
+      label: Kubernetes distribution and version
+      placeholder: "k3s v1.31.2, kind v0.24.0, EKS 1.30 …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Pod logs / events
+      description: "`kubectl logs deploy/blittermib` and `kubectl describe` where relevant."
+      render: shell

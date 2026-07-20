@@ -1,5 +1,5 @@
 # Helm chart for blittermib — https://github.com/no42-org/blittermib
-.PHONY: docs lint template package smoke-install help
+.PHONY: docs lint lint-actions template package help
 
 CHART_DIR := charts/blittermib
 TAG ?=
@@ -19,6 +19,15 @@ lint:
 		--set 'httpRoute.parentRefs[0].name=x' >/dev/null 2>&1; then \
 		echo "FAIL: ingress+httpRoute should be mutually exclusive"; exit 1; \
 	else echo "OK: routing mutual-exclusion guard fires"; fi
+
+# lint-actions checks the workflows themselves: actionlint for syntax
+# and shell bugs inside `run:` blocks, zizmor for supply-chain issues
+# (unpinned actions, template injection, over-broad permissions).
+lint-actions:
+	@command -v actionlint >/dev/null 2>&1 || { echo "actionlint not installed (brew install actionlint)"; exit 1; }
+	@command -v zizmor >/dev/null 2>&1 || { echo "zizmor not installed (brew install zizmor)"; exit 1; }
+	actionlint
+	zizmor .github/workflows
 
 template:
 	helm template blittermib $(CHART_DIR) >/dev/null
@@ -42,5 +51,6 @@ package:
 help:
 	@echo "make docs      regenerate chart README via helm-docs (run with every bump)"
 	@echo "make lint      helm lint + render guards"
+	@echo "make lint-actions  actionlint + zizmor over .github/workflows"
 	@echo "make template  render default and persistent variants"
 	@echo "make package   build dist/ tarball (TAG=vX.Y.Z stamps the chart version)"

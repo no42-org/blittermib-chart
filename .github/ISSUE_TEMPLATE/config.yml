@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bug in the blittermib application
+    url: https://github.com/no42-org/blittermib/issues/new/choose
+    about: This repo is the Helm chart only. Bugs in the MIB browser itself belong upstream.
+  - name: Security vulnerability
+    url: https://github.com/no42-org/blittermib-chart/security/advisories/new
+    about: Report privately. Never open a public issue for a security problem.
+  - name: Question about deploying the chart
+    url: https://github.com/no42-org/blittermib-chart/blob/main/SUPPORT.md
+    about: Where to ask, and what to include.

@@ -1,5 +1,10 @@
 # blittermib-chart
 
+[![CI](https://github.com/no42-org/blittermib-chart/actions/workflows/ci.yml/badge.svg)](https://github.com/no42-org/blittermib-chart/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/no42-org/blittermib-chart?label=chart)](https://github.com/no42-org/blittermib-chart/releases/latest)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/no42-org/blittermib-chart/badge)](https://scorecard.dev/viewer/?uri=github.com/no42-org/blittermib-chart)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Helm chart for [blittermib](https://github.com/no42-org/blittermib) —
 the self-hostable, browser-based SNMP MIB reference tool.
 
@@ -63,13 +68,21 @@ application repository's `release.yml` instead — see the
 ## Development
 
 ```bash
-make lint       # helm lint + render guards
-make template   # default + persistent renders
-make package    # TAG=vX.Y.Z stamps the chart version into dist/
+make lint         # helm lint + render guards
+make template     # default + persistent renders
+make package      # TAG=vX.Y.Z stamps the chart version into dist/
+make lint-actions # actionlint + zizmor over .github/workflows
 ```
 
-Releases: tag `vX.Y.Z` → CI packages, pushes to
-`oci://ghcr.io/no42-org/charts`, and signs the digest.
+Releases: tag `vX.Y.Z` → CI runs the gates, packages, pushes to
+`oci://ghcr.io/no42-org/charts`, signs the digest, and opens a draft
+GitHub release with the SBOM and signed checksums. See
+[RELEASING.md](RELEASING.md).
+
+How to contribute — issue first, DCO sign-off, AI-assistance policy —
+is in [CONTRIBUTING.md](CONTRIBUTING.md). Security reports go through
+[SECURITY.md](SECURITY.md), never a public issue. Where to ask
+questions: [SUPPORT.md](SUPPORT.md).
 
 ## License
 
