@@ -57,14 +57,23 @@ stripped rebuild.
 ## Verifying releases
 
 Charts are signed with [cosign](https://github.com/sigstore/cosign)
-keyless signing; the identity is **this repository's** release
-workflow:
+keyless signing; the identity is **this repository's** publish
+workflow, at a version tag:
 
 ```bash
 cosign verify ghcr.io/no42-org/charts/blittermib:<chart-version> \
-  --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
+  --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/(publish|release)\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 ```
+
+The identity names `publish.yml`, not `release.yml`: signing moved
+into a reusable workflow that `release.yml` calls, and Fulcio issues
+the certificate to the **called** workflow. `release.yml` stays in the
+pattern so charts through `0.5.9` still verify with one command.
+
+The `@refs/tags/` anchor is what separates a release from a preview —
+`0.0.0-main` is signed by the same workflow at `@refs/heads/main`, so
+it can never satisfy this command.
 
 Charts published before the extraction (≤ 0.10.0) were signed by the
 application repository's `release.yml` instead — see the

@@ -82,7 +82,7 @@ it for humans.
    ```bash
    cosign verify-blob checksums.txt \
      --bundle checksums.txt.sigstore.json \
-     --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
+     --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/(publish|release)\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
    ```
 
@@ -107,6 +107,18 @@ Its real job is to keep the publish path warm. `ci.yml` and
 and cosign steps a release depends on run on every merge instead of
 only when you tag. The cosign v3 bundle bug that broke `v0.5.10-rc1`
 would have surfaced at merge time under this arrangement.
+
+The preview is signed by the same identity as a release, differing
+only in the ref — verify one with:
+
+```bash
+cosign verify ghcr.io/no42-org/charts/blittermib:0.0.0-main \
+  --certificate-identity-regexp='^https://github.com/no42-org/blittermib-chart/\.github/workflows/publish\.yml@refs/heads/main$' \
+  --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+```
+
+That `@refs/heads/main` anchor is what stops a preview satisfying the
+release verification command, and vice versa.
 
 ## Prereleases
 
