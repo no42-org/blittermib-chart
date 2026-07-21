@@ -25,15 +25,26 @@ on:
         default: false
         type: boolean
 
-# No permissions block here on purpose: a called workflow inherits what
-# the caller granted at its `uses:` job, so each caller declares exactly
-# what it needs and previews never hold contents/attestations write.
+# Least-privilege default for anything added to this workflow later.
+permissions:
+  contents: read
 
 jobs:
   publish:
     name: ${{ inputs.release && 'release' || 'preview' }} ${{ inputs.chart-version }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # The union of what the two callers need. A called workflow can only
+    # maintain or REDUCE the caller's grant, never elevate it, so this is
+    # a ceiling rather than a request: each caller's own `uses:` block
+    # does the actual restricting. A preview therefore still runs with
+    # contents:read and no attestations:write, exactly as before —
+    # ci.yml never grants them, and nothing here can add them.
+    permissions:
+      contents: write      # release only: create the draft GitHub release
+      packages: write      # push the chart to GHCR
+      id-token: write      # keyless cosign: short-lived Fulcio cert
+      attestations: write  # release only: SLSA build provenance
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
