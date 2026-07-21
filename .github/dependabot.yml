@@ -1,9 +1,15 @@
 version: 2
+# `cooldown` holds back brand-new releases for a few days. A compromised
+# package is typically yanked within hours of discovery, so waiting means
+# Dependabot never proposes the malicious version in the first place.
+# Security advisories bypass cooldown, so real fixes still arrive at once.
 updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "ci"
     labels:
