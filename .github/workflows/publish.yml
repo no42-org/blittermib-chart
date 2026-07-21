@@ -41,10 +41,9 @@ jobs:
     # contents:read and no attestations:write, exactly as before —
     # ci.yml never grants them, and nothing here can add them.
     permissions:
-      contents: write      # release only: create the draft GitHub release
-      packages: write      # push the chart to GHCR
-      id-token: write      # keyless cosign: short-lived Fulcio cert
-      attestations: write  # release only: SLSA build provenance
+      contents: read
+      packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
