@@ -35,6 +35,13 @@ jobs:
           results_file: results.sarif
           results_format: sarif
           publish_results: true
+          # The default GITHUB_TOKEN cannot read admin-enforcement settings,
+          # so Scorecard reports what it cannot see as disabled — it has been
+          # scoring Branch-Protection on absent data. SCORECARD_TOKEN is an
+          # organisation secret (admin:read) shared by the repos running this
+          # workflow. Falls back to github.token when absent, so the run never
+          # fails for want of the secret.
+          repo_token: ${{ secrets.SCORECARD_TOKEN || github.token }}
 
       - uses: github/codeql-action/upload-sarif@7188fc363630916deb702c7fdcf4e481b751f97a  # v4.37.1
         with:
