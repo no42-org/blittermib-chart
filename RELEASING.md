@@ -144,3 +144,4 @@ an rc and do not bump `Chart.yaml` for it.
   consumed; pulling it back requires deleting the GHCR package
   versions (chart manifest, cosign signature, referrer) before
   re-tagging.
+<!-- ruleset verification probe -->
