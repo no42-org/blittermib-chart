@@ -8,6 +8,13 @@ on:
     - cron: '17 4 * * 1'
   push:
     branches: [main]
+  # Several checks score on state held outside this repository — ruleset
+  # enforcement, the bestpractices.dev badge. Changing any of those leaves
+  # the score stale with no commit to trigger a re-run, and the other
+  # triggers do not fire for them: branch_protection_rule covers classic
+  # protection, not rulesets. Without this, verifying such a change means
+  # waiting for Monday or pushing a no-op commit.
+  workflow_dispatch:
 
 permissions:
   contents: read
