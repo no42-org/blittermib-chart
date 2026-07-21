@@ -1,0 +1,55 @@
+# CodeQL over the GitHub Actions workflows. There is no application code
+# here to scan — the repository is Helm templates and a Makefile — but the
+# workflows are code, they hold write permissions and registry credentials,
+# and `actions` is the one language GitHub reports as analysable for this
+# repository (`GET /repos/.../code-scanning/default-setup` → ["actions"]).
+#
+# This overlaps with actionlint and zizmor in gates.yml rather than
+# duplicating them: those lint syntax and known-bad patterns, CodeQL does
+# taint tracking across a workflow — untrusted input reaching a `run:`
+# block through several hops is the class it catches and they do not.
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, so new queries reach a quiet repository. Offset off the hour
+    # and clear of scorecard's 04:17 slot.
+    - cron: '41 5 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: analyze actions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write  # upload SARIF to the security tab
+      actions: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      # Workflows are interpreted, so there is nothing to build.
+      # security-and-quality adds maintainability rules on top of the
+      # security pack, matching the intent of the Scorecard SAST check.
+      - uses: github/codeql-action/init@7188fc363630916deb702c7fdcf4e481b751f97a  # v4.37.1
+        with:
+          languages: actions
+          build-mode: none
+          queries: security-and-quality
+
+      - uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a  # v4.37.1
+        with:
+          category: /language:actions
