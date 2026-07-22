@@ -2,8 +2,8 @@ apiVersion: v2
 name: blittermib
 description: Pixelperfect SNMP MIB browser — self-hostable, browser-based reference tool.
 type: application
-version: 0.5.10
-appVersion: "0.17.6"
+version: 0.5.11
+appVersion: "0.17.7"
 home: https://github.com/no42-org/blittermib
 sources:
   - https://github.com/no42-org/blittermib
