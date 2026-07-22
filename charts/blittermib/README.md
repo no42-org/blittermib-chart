@@ -1,6 +1,6 @@
 # blittermib
 
-![Version: 0.5.9](https://img.shields.io/badge/Version-0.5.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.5](https://img.shields.io/badge/AppVersion-0.17.5-informational?style=flat-square)
+![Version: 0.5.10](https://img.shields.io/badge/Version-0.5.10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.6](https://img.shields.io/badge/AppVersion-0.17.6-informational?style=flat-square)
 
 Pixelperfect SNMP MIB browser — self-hostable, browser-based reference tool.
 
