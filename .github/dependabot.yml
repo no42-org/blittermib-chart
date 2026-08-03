@@ -15,3 +15,11 @@ updates:
     labels:
       - dependencies
       - github-actions
+    # `init` and `analyze` run in the same job and CodeQL refuses to run
+    # them at different versions. Dependabot sees each action path as its
+    # own dependency, so an ungrouped bump splits into PRs that each fail
+    # on the resulting mismatch and can never be merged. See #48.
+    groups:
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
